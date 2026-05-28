@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Urlaub Bingo 🌴</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --card: #1a2235;
+    --card-done: #0d2a4a;
+    --accent: #0073e6;
+    --accent2: #34d399;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --border: rgba(255,255,255,0.07);
+    --done-text: #5ab4ff;
+    --done-border: rgba(0,115,230,0.35);
+    --tooltip-bg: #1e293b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 20% 0%, rgba(0,115,230,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(52,211,153,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 2rem; }
+
+  header {
+    padding: 1.5rem 1rem 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .title span { color: var(--accent); }
+
+  .counter-wrap {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .counter {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 14px;
+    color: var(--accent);
+    transition: all 0.3s;
+  }
+  .counter.pop { animation: pop 0.35s ease; }
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+
+  .progress-bar-wrap {
+    padding: 0 1rem 1rem;
+  }
+  .progress-track {
+    height: 4px; background: var(--surface); border-radius: 99px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 0 1rem;
+  }
+
+  .cell {
+    aspect-ratio: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.3;
+    padding: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.25s, border-color 0.25s, transform 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    overflow: hidden;
+  }
+  .cell:active { transform: scale(0.93); }
+
+  .cell.done {
+    background: var(--card-done);
+    border-color: var(--done-border);
+    color: var(--done-text);
+  }
+  .cell.done::after {
+    content: '✓';
+    position: absolute;
+    top: 5px; right: 7px;
+    font-size: 1.5rem;
+    color: var(--accent2);
+    opacity: 0.8;
+  }
+  .cell-label { pointer-events: none; }
+
+  /* Ripple */
+  .cell .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0,115,230,0.25);
+    transform: scale(0);
+    animation: ripple-anim 0.5s linear;
+    pointer-events: none;
+  }
+  @keyframes ripple-anim {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* Tooltip */
+  .tooltip {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    background: var(--tooltip-bg);
+    border: 1px solid rgba(0,115,230,0.4);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    max-width: 280px;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
+  .tooltip.visible { display: block; }
+  .tooltip-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* Reset */
+  .reset-btn {
+    display: block;
+    margin: 1.5rem auto 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    padding: 8px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .reset-btn:active { color: var(--text); border-color: var(--muted); }
+
+  /* Confetti burst on full board */
+  .boom { animation: boom 0.6s ease; }
+  @keyframes boom { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">Urlaub <span>Bingo</span> 🌴</div>
+    <div class="counter-wrap">
+      <div class="counter" id="counter">0 / 30</div>
+    </div>
+  </header>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <button class="reset-btn" id="resetBtn">Zurücksetzen</button>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-num" id="tooltip-num"></div>
+  <div id="tooltip-text"></div>
+</div>
+
+<script>
+const events = [
+  { short: "Sonnenbrand", full: "Jemand verbrennt sich trotz Sonnencreme und hat Sonnenbrand" },
+  { short: "Sonnenbrille weg", full: "Jemand verliert seine Sonnenbrille im Meer" },
+  { short: "\"Zu kalt!\"", full: "Jemand beschwert sich, dass das Wasser zu kalt ist" },
+  { short: "Getränk verschüttet", full: "Jemand verschüttet sein Getränk" },
+  { short: "Doch Nachtisch", full: "Jemand isst Nachtisch, obwohl er vorher gesagt hat, er verzichtet" },
+  { short: "Über Arbeit reden", full: "Jemand redet über die Arbeit, obwohl Urlaub ist" },
+  { short: "Zu spät", full: "Jemand kommt zu spät zum vereinbarten Treffpunkt" },
+  { short: "Strand-Schnarcher", full: "Jemand schläft am Strand ein und schnarcht" },
+  { short: "Essen fotograf.", full: "Jemand fotografiert sein Essen bevor er isst" },
+  { short: "Insta-Story", full: "Jemand postet eine Instagram-Story vom Strand" },
+  { short: "\"Kein WLAN!\"", full: "Jemand beschwert sich über schlechtes WLAN" },
+  { short: "Was vergessen", full: "Jemand hat etwas Wichtiges vergessen einzupacken" },
+  { short: "Niemand will's", full: "Jemand schlägt eine spontane Aktivität vor, die keiner will" },
+  { short: "Kacken-Insider", full: "\"Ist der wieder kacken?\" (Insider)" },
+  { short: "Burger King!", full: "Jemand will unbedingt zu Burger King" },
+  { short: "Bier am Gate", full: "Erstes Bier schon am Gate bestellt" },
+  { short: "Security raus", full: "Jemand wird am Security-Check rausgepickt" },
+  { short: "Jemand weg", full: "Jemand geht verloren und muss gesucht werden" },
+  { short: "Verletzt", full: "Jemand verletzt sich" },
+  { short: "Kleckerei", full: "Jemand kleckert sich auf die Klamotten" },
+  { short: "Etwas verloren", full: "Jemand verliert etwas (Schlüssel, Karte, Brille...)" },
+  { short: "Kitsch-Souvenir", full: "Jemand kauft einen kitschigen Souvenir-Artikel" },
+  { short: "Tanzt mit!", full: "Jemand singt oder tanzt spontan mit bei Musik" },
+  { short: "Snacks bestellt", full: "Snacks werden aktiv beim Kellner für den Tisch nachbestellt" },
+  { short: "Teuer-Kauf", full: "Jemand kauft sich etwas sehr Teures" },
+  { short: "Selfie erwischt", full: "Jemand wird beim Posen für ein Selfie erwischt" },
+  { short: "Nochmal aufs Zimmer", full: "Jemand vergisst etwas und muss noch einmal aufs Zimmer" },
+  { short: "Verkäufer", full: "Einheimische versuchen, uns etwas zu verkaufen" },
+  { short: "Fremder im Foto", full: "Jemand macht ein Foto, auf dem aus Versehen ein Fremder mit drauf ist" },
+  { short: "Stammplatz", full: "Jemand sitzt den gesamten Urlaub immer auf dem gleichen Platz beim Essen" },
+];
+
+const STORAGE_KEY = 'urlaubBingo2025';
+let checked = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+const grid = document.getElementById('grid');
+const counter = document.getElementById('counter');
+const progress = document.getElementById('progress');
+const tooltip = document.getElementById('tooltip');
+const tooltipText = document.getElementById('tooltip-text');
+const tooltipNum = document.getElementById('tooltip-num');
+
+let pressTimer = null;
+let tooltipVisible = false;
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(checked));
+}
+
+function updateCounter() {
+  const n = checked.length;
+  counter.textContent = `${n} / 30`;
+  progress.style.width = `${(n / 30) * 100}%`;
+  counter.classList.remove('pop');
+  void counter.offsetWidth;
+  counter.classList.add('pop');
+}
+
+function showTooltip(el, index, e) {
+  tooltipNum.textContent = `#${index + 1}`;
+  tooltipText.textContent = events[index].full;
+  tooltip.classList.add('visible');
+
+  const rect = el.getBoundingClientRect();
+  const tw = 280;
+  let left = rect.left + rect.width / 2 - tw / 2;
+  let top = rect.top - 10;
+
+  if (left < 8) left = 8;
+  if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+  if (top - 80 < 8) top = rect.bottom + 10;
+  else top = rect.top - 90;
+
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+  tooltipVisible = true;
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+  tooltipVisible = false;
+}
+
+function ripple(el, e) {
+  const r = document.createElement('span');
+  r.classList.add('ripple');
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.width = r.style.height = size + 'px';
+  const touch = e.touches ? e.touches[0] : e;
+  r.style.left = (touch.clientX - rect.left - size / 2) + 'px';
+  r.style.top = (touch.clientY - rect.top - size / 2) + 'px';
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
+
+function buildGrid() {
+  grid.innerHTML = '';
+  events.forEach((ev, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (checked.includes(i) ? ' done' : '');
+    cell.innerHTML = `<span class="cell-label">${ev.short}</span>`;
+
+    // Long press for tooltip
+    cell.addEventListener('contextmenu', (e) => e.preventDefault());
+    cell.addEventListener('touchstart', (e) => {
+      pressTimer = setTimeout(() => {
+        showTooltip(cell, i, e);
+      }, 500);
+    }, { passive: true });
+
+    cell.addEventListener('touchend', (e) => {
+      clearTimeout(pressTimer);
+      if (tooltipVisible) { hideTooltip(); return; }
+      ripple(cell, e);
+      toggle(i, cell);
+    });
+
+    cell.addEventListener('touchmove', () => {
+      clearTimeout(pressTimer);
+    }, { passive: true });
+
+    // Desktop support
+    cell.addEventListener('mousedown', (e) => {
+      pressTimer = setTimeout(() => showTooltip(cell, i, e), 500);
+    });
+    cell.addEventListener('mouseup', (e) => {
+      clearTimeout(pressTimer);
+      if (tooltipVisible) { hideTooltip(); return; }
+      ripple(cell, e);
+      toggle(i, cell);
+    });
+    cell.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+
+    grid.appendChild(cell);
+  });
+}
+
+function toggle(i, cell) {
+  if (checked.includes(i)) {
+    checked = checked.filter(x => x !== i);
+    cell.classList.remove('done');
+  } else {
+    checked.push(i);
+    cell.classList.add('done');
+  }
+  save();
+  updateCounter();
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (confirm('Wirklich alle Häkchen zurücksetzen?')) {
+    checked = [];
+    save();
+    buildGrid();
+    updateCounter();
+  }
+});
+
+document.addEventListener('touchstart', (e) => {
+  if (tooltipVisible && !e.target.closest('.cell')) hideTooltip();
+}, { passive: true });
+
+buildGrid();
+updateCounter();
+</script>
+</body>
+</html>
