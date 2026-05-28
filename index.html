@@ -197,7 +197,24 @@
   <div id="tooltip-text"></div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD5G6TLY11N-LS7nplG7jyBLC1WZjTQDOc",
+  authDomain: "nettrek-urlaubs-bingo-2026.firebaseapp.com",
+  databaseURL: "https://nettrek-urlaubs-bingo-2026-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nettrek-urlaubs-bingo-2026",
+  storageBucket: "nettrek-urlaubs-bingo-2026.firebasestorage.app",
+  messagingSenderId: "850797988248",
+  appId: "1:850797988248:web:72efad3bb12790a1d783ed"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const bingoRef = db.ref('bingo/checked');
+
 const events = [
   { short: "Sonnenbrand", full: "Jemand verbrennt sich trotz Sonnencreme und hat Sonnenbrand" },
   { short: "Sonnenbrille weg", full: "Jemand verliert seine Sonnenbrille im Meer" },
@@ -231,21 +248,18 @@ const events = [
   { short: "Stammplatz", full: "Jemand sitzt den gesamten Urlaub immer auf dem gleichen Platz beim Essen" },
 ];
 
-const STORAGE_KEY = 'urlaubBingo2025';
-let checked = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-
+let checked = [];
 const grid = document.getElementById('grid');
 const counter = document.getElementById('counter');
 const progress = document.getElementById('progress');
 const tooltip = document.getElementById('tooltip');
 const tooltipText = document.getElementById('tooltip-text');
 const tooltipNum = document.getElementById('tooltip-num');
-
 let pressTimer = null;
 let tooltipVisible = false;
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(checked));
+function saveToFirebase() {
+  bingoRef.set(checked);
 }
 
 function updateCounter() {
@@ -257,21 +271,26 @@ function updateCounter() {
   counter.classList.add('pop');
 }
 
-function showTooltip(el, index, e) {
+function renderGrid() {
+  document.querySelectorAll('.cell').forEach((cell, i) => {
+    if (checked.includes(i)) cell.classList.add('done');
+    else cell.classList.remove('done');
+  });
+  updateCounter();
+}
+
+function showTooltip(el, index) {
   tooltipNum.textContent = `#${index + 1}`;
   tooltipText.textContent = events[index].full;
   tooltip.classList.add('visible');
-
   const rect = el.getBoundingClientRect();
   const tw = 280;
   let left = rect.left + rect.width / 2 - tw / 2;
-  let top = rect.top - 10;
-
+  let top;
   if (left < 8) left = 8;
   if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
-  if (top - 80 < 8) top = rect.bottom + 10;
-  else top = rect.top - 90;
-
+  if (rect.top - 100 < 8) top = rect.bottom + 10;
+  else top = rect.top - 100;
   tooltip.style.left = left + 'px';
   tooltip.style.top = top + 'px';
   tooltipVisible = true;
@@ -295,6 +314,12 @@ function ripple(el, e) {
   setTimeout(() => r.remove(), 600);
 }
 
+function toggle(i) {
+  if (checked.includes(i)) checked = checked.filter(x => x !== i);
+  else checked.push(i);
+  saveToFirebase();
+}
+
 function buildGrid() {
   grid.innerHTML = '';
   events.forEach((ev, i) => {
@@ -302,34 +327,29 @@ function buildGrid() {
     cell.className = 'cell' + (checked.includes(i) ? ' done' : '');
     cell.innerHTML = `<span class="cell-label">${ev.short}</span>`;
 
-    // Long press for tooltip
     cell.addEventListener('contextmenu', (e) => e.preventDefault());
+
     cell.addEventListener('touchstart', (e) => {
-      pressTimer = setTimeout(() => {
-        showTooltip(cell, i, e);
-      }, 500);
+      pressTimer = setTimeout(() => showTooltip(cell, i), 500);
     }, { passive: true });
 
     cell.addEventListener('touchend', (e) => {
       clearTimeout(pressTimer);
       if (tooltipVisible) { hideTooltip(); return; }
       ripple(cell, e);
-      toggle(i, cell);
+      toggle(i);
     });
 
-    cell.addEventListener('touchmove', () => {
-      clearTimeout(pressTimer);
-    }, { passive: true });
+    cell.addEventListener('touchmove', () => clearTimeout(pressTimer), { passive: true });
 
-    // Desktop support
     cell.addEventListener('mousedown', (e) => {
-      pressTimer = setTimeout(() => showTooltip(cell, i, e), 500);
+      pressTimer = setTimeout(() => showTooltip(cell, i), 500);
     });
     cell.addEventListener('mouseup', (e) => {
       clearTimeout(pressTimer);
       if (tooltipVisible) { hideTooltip(); return; }
       ripple(cell, e);
-      toggle(i, cell);
+      toggle(i);
     });
     cell.addEventListener('mouseleave', () => clearTimeout(pressTimer));
 
@@ -337,24 +357,10 @@ function buildGrid() {
   });
 }
 
-function toggle(i, cell) {
-  if (checked.includes(i)) {
-    checked = checked.filter(x => x !== i);
-    cell.classList.remove('done');
-  } else {
-    checked.push(i);
-    cell.classList.add('done');
-  }
-  save();
-  updateCounter();
-}
-
 document.getElementById('resetBtn').addEventListener('click', () => {
   if (confirm('Wirklich alle Häkchen zurücksetzen?')) {
     checked = [];
-    save();
-    buildGrid();
-    updateCounter();
+    saveToFirebase();
   }
 });
 
@@ -363,7 +369,11 @@ document.addEventListener('touchstart', (e) => {
 }, { passive: true });
 
 buildGrid();
-updateCounter();
+
+bingoRef.on('value', (snapshot) => {
+  checked = snapshot.val() || [];
+  renderGrid();
+});
 </script>
 </body>
 </html>
