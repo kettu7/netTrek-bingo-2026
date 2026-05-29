@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urlaubs-Bingo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #eef1f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    .flyer {
+      background: #fff;
+      max-width: 420px;
+      width: 100%;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(10, 31, 75, 0.13);
+    }
+
+    /* Header */
+    .flyer-header {
+      background: #0a1f4b;
+      padding: 32px 28px 26px;
+      position: relative;
+      overflow: hidden;
+    }
+    .flyer-header::before {
+      content: '';
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: #1e3f8a;
+    }
+    .flyer-header::after {
+      content: '';
+      position: absolute;
+      bottom: -35px; left: 24px;
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: #2ecc7a;
+      opacity: 0.65;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .logo svg { width: 22px; height: 22px; }
+    .logo-text {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .flyer-title {
+      color: #fff;
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1.1;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Body */
+    .flyer-body { padding: 22px 24px 8px; }
+
+    .info-card {
+      background: #eef3ff;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+    .info-card-title {
+      color: #1e3f8a;
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .info-card-text {
+      color: #333;
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0a1f4b;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .stat-box {
+      flex: 1;
+      border: 1px solid #e0e5f0;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 28px;
+      font-weight: 900;
+      color: #1e3f8a;
+      line-height: 1;
+    }
+    .stat-num.green { color: #1ab368; }
+    .stat-label {
+      font-size: 12px;
+      color: #777;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e8ecf5;
+      margin: 0 0 22px;
+    }
+
+    .rule-block { margin-bottom: 22px; }
+
+    .rule-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #0a1f4b;
+      margin-bottom: 8px;
+    }
+    .rule-text {
+      font-size: 13.5px;
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .highlight-box {
+      background: #e4efff;
+      border-radius: 10px;
+      padding: 11px 15px;
+    }
+    .highlight-box p {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e3f8a;
+      line-height: 1.5;
+    }
+
+    .tolerance-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tol-box {
+      flex: 1;
+      background: #0a1f4b;
+      border-radius: 10px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+    .tol-num {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .tol-label {
+      color: #8fa3c8;
+      font-size: 10.5px;
+      margin-top: 3px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .example-box {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 11px 15px;
+      margin-top: 10px;
+    }
+    .example-box p {
+      font-size: 12.5px;
+      color: #666;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 16px 0 24px;
+    }
+    .footer p {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0a1f4b;
+    }
+  </style>
+</head>
+<body>
+  <div class="flyer">
+    <div class="flyer-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="#fff" stroke-width="2"/>
+          <path d="M9 22V12h6v10" stroke="#fff" stroke-width="2"/>
+        </svg>
+        <span class="logo-text">netTrek</span>
+      </div>
+      <h1 class="flyer-title">Urlaubs-Bingo</h1>
+    </div>
+
+    <div class="flyer-body">
+      <div class="info-card">
+        <p class="info-card-title">Was ist das Urlaubs-Bingo?</p>
+        <p class="info-card-text">Beim Urlaubs-Bingo geht es darum, unseren Betriebsausflug ein bisschen aufregender zu machen. Vor der Reise gibt es eine geheime Liste mit 30 typischen Urlaubssituationen. Wir haben darauf geachtet, dass jede Situation potenziell eintreffen kann. Es ist nichts unwahrscheinliches dabei. Welche Situationen genau auf der Liste stehen? Das bleibt bis zum Schluss geheim! Jeder tippt vorab wie viele dieser Situationen wirklich eintreten werden. Wer am Ende am besten liegt, gewinnt den gesamten Topf!</p>
+      </div>
+
+      <p class="section-title">Spielregeln</p>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num">30</div>
+          <div class="stat-label">Ereignisse</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num green">ab 1€</div>
+          <div class="stat-label">Einsatz</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="rule-block">
+        <p class="rule-title">Der Grundstein</p>
+        <p class="rule-text">Jede Person gibt vorab eine Zahl ab: Wie viele der 30 Ereignisse werden eintreten?<br>Wer am Ende am nächsten dran ist, gewinnt den gesamten Topf</p>
+        <div class="highlight-box">
+          <p>Julian tippt auf 12 Ereignisse, Lina auf 7 – wer liegt am Ende näher dran?</p>
+        </div>
+      </div>
+
+      <div class="rule-block">
+        <p class="rule-title">Der Tipp</p>
+        <p class="rule-text">Jede Person bekommt kostenlos einen Extra-Tipp: ein konkretes Ereignis nennen, das man glaubt, dass es passiert. Liegt man richtig, darf der Haupttipp um ±1 abweichen.</p>
+        <div class="highlight-box">
+          <p>3 Ereignisse + Gratis-Tipp richtig → gewinnt auch bei 2 oder 4</p>
+        </div>
+      </div>
+
+      <div class="rule-block">
+        <p class="rule-title">Extra-Chance kaufen</p>
+        <p class="rule-text">Für je 2 € können bis zu 2 weitere Tipps gekauft werden (max. 3 Tipps gesamt). Jeder richtige Zusatz-Tipp erweitert den gültigen Bereich um weitere ±1.</p>
+        <div class="tolerance-row">
+          <div class="tol-box">
+            <div class="tol-num">± 1</div>
+            <div class="tol-label">Gratis-Tipp</div>
+          </div>
+          <div class="tol-box">
+            <div class="tol-num">± 2</div>
+            <div class="tol-label">1 Zusatz-Tipp</div>
+          </div>
+          <div class="tol-box">
+            <div class="tol-num">± 3</div>
+            <div class="tol-label">2 Zusatz-Tipps</div>
+          </div>
+        </div>
+        <div class="example-box">
+          <p>Beispiel: Tipp 10 Ereignisse + alle 3 Tipps richtig → gewinnt bei 7 bis 13 Ereignissen</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Viel Spaß im Urlaub! 🌴</p>
+    </div>
+  </div>
+</body>
+</html>
